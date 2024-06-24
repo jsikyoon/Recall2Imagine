@@ -6,29 +6,29 @@ RUN apt-get update && apt-get install -y \
     libglu1-mesa libglu1-mesa-dev libgl1-mesa-dev libosmesa6-dev mesa-utils freeglut3 freeglut3-dev \
     libglew2.1 libglfw3 libglfw3-dev libegl-dev zlib1g zlib1g-dev libsdl2-dev libjpeg-dev lua5.1 liblua5.1-0-dev libffi-dev \
     build-essential cmake g++ build-essential pkg-config software-properties-common gettext \
-    ffmpeg patchelf swig unrar unzip zip curl wget tmux \
+    ffmpeg patchelf swig unrar unzip zip curl wget tmux python3-pip \
     && rm -rf /var/lib/apt/lists/*
 
 
-ENV CNDA=/conda
-RUN mkdir -p $CNDA && chmod 755 $CNDA
-RUN curl -Lo $CNDA/miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh \
- && chmod +x $CNDA/miniconda.sh \
- && $CNDA/miniconda.sh -b -p $CNDA/miniconda \
- && rm $CNDA/miniconda.sh
-ENV PATH=$CNDA/miniconda/bin:$PATH
-ENV CONDA_AUTO_UPDATE_CONDA=false
-
-# Create a Python 3.8 environment
-RUN $CNDA/miniconda/bin/conda create -y --name py38 python=3.8 \
- && $CNDA/miniconda/bin/conda clean -ya
-ENV CONDA_DEFAULT_ENV=py38
-ENV CONDA_PREFIX=$CNDA/miniconda/envs/$CONDA_DEFAULT_ENV
-ENV PATH=$CONDA_PREFIX/bin:$PATH
-RUN $CNDA/miniconda/bin/conda clean -ya
+#ENV CNDA=/conda
+#RUN mkdir -p $CNDA && chmod 755 $CNDA
+#RUN curl -Lo $CNDA/miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-4.5.11-Linux-x86_64.sh \
+# && chmod +x $CNDA/miniconda.sh \
+# && $CNDA/miniconda.sh -b -p $CNDA/miniconda \
+# && rm $CNDA/miniconda.sh
+#ENV PATH=$CNDA/miniconda/bin:$PATH
+#ENV CONDA_AUTO_UPDATE_CONDA=false
+#
+## Create a Python 3.8 environment
+#RUN $CNDA/miniconda/bin/conda create -y --name py38 python=3.8 \
+# && $CNDA/miniconda/bin/conda clean -ya
+#ENV CONDA_DEFAULT_ENV=py38
+#ENV CONDA_PREFIX=$CNDA/miniconda/envs/$CONDA_DEFAULT_ENV
+#ENV PATH=$CONDA_PREFIX/bin:$PATH
+#RUN $CNDA/miniconda/bin/conda clean -ya
 # Create conda environment
 # Atari
-RUN pip3 install --upgrade setuptools pip
+#RUN pip3 install --upgrade setuptools pip
 ADD ./gym-0.19.0-py3-none-any.whl /root
 RUN pip3 install \
     tensorflow_probability==0.20.1 \
@@ -65,7 +65,7 @@ RUN pip3 install \
 RUN pip3 install --upgrade \
     flax \
     dm-haiku \
-    "jax[cuda11_local]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html \
+    "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html \
     optax==0.1.5
 
 RUN wget -L -nv http://www.atarimania.com/roms/Roms.rar && \
@@ -83,3 +83,12 @@ ENV PYTHONUNBUFFERED 1
 ENV LANG "C.UTF-8"
 ENV NUMBA_CACHE_DIR=/tmp
 ENV XLA_PYTHON_CLIENT_MEM_FRACTION 0.8
+
+# New User
+ARG UNAME=jsyoon
+ARG UID=1020
+ARG GID=1020
+RUN groupadd -g $GID -o $UNAME
+RUN useradd -m -u $UID -g $GID -o -s /bin/bash $UNAME
+USER $UNAME
+WORKDIR /home/$UNAME

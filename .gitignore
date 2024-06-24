@@ -1,3 +1,5 @@
+logs_memory_maze_9x9
+wandb/
 .pytest_cache
 dist
 scripts/*
